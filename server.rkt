@@ -2,15 +2,31 @@
 (require web-server/servlet
          web-server/servlet-env
          racket/list
-         racket/file)
+         racket/file
+         json)
 
 ; Dispatch-values
 (define-values (servlet-dispatch servlet-url)
   (dispatch-rules
-  [("posts") review-posts]
+  [("message") #:method "get" get-message-endpoint]
+  [("message") #:method "post" post-message-endpoint]
   [("archive") review-archive]
-  [("") list-posts]
+  [("") welcome-endpoint]
   [else list-posts]))
+
+(define (welcome-endpoint req)
+  (response/jsexpr
+    #hasheq((test . (2 3 4)))))
+
+(define (get-message-endpoint req)
+  (response/jsexpr
+    #hasheq((set-at . 20342)
+            (by-person . "Nikolai Kozak")
+            (message . "Hey what's up?"))))
+
+(define (post-message-endpoint req)
+  (response/jsexpr
+    #hasheq((status . "OK"))))
 
 (define (list-posts req)
  (response/xexpr

@@ -5,41 +5,64 @@
          racket/file
          json)
 
+; File path for storing messages
+(define message-file "message.json")
+
+; Helper function to read the current message from file
+(define (read-message)
+  (if (file-exists? message-file)
+      (call-with-input-file message-file
+        (lambda (in) (read-json in)))
+      #hasheq()))
+
+; Helper function to write a message to file
+(define (write-message msg-hash)
+  (call-with-output-file message-file
+    (lambda (out) (write-json msg-hash out))
+    #:exists 'replace))
+
 ; Dispatch-values
 (define-values (servlet-dispatch servlet-url)
   (dispatch-rules
   [("message") #:method "get" get-message-endpoint]
   [("message") #:method "post" post-message-endpoint]
-  [("archive") review-archive]
   [("") welcome-endpoint]
-  [else list-posts]))
+  [else welcome-endpoint]))
 
 (define (welcome-endpoint req)
-  (response/jsexpr
-    #hasheq((test . (2 3 4)))))
+  (response/xexpr
+    "\n\nWelcome! This is my little API.\n
+It is written in Racket, and will continue to grow until the end of class.\n
+For now, you can do the following:\n\n
+  GET /message - Retrieve the current message from the \"wall\"\n
+  POST /message - Post a message to the wall in the format {\"name\": \"Your name\", \"message\": \"Something you feel like saying\"}\n\n"))
 
 (define (get-message-endpoint req)
-  (response/jsexpr
-    #hasheq((set-at . 20342)
-            (by-person . "Nikolai Kozak")
-            (message . "Hey what's up?"))))
+  (define msg (read-message))
+  (if (hash-empty? msg)
+      (response/jsexpr
+        #hasheq((status . "ERROR")
+                (error . "No message available"))
+        #:code 404)
+      (response/jsexpr msg)))
 
 (define (post-message-endpoint req)
-  (response/jsexpr
-    #hasheq((status . "OK"))))
+  (define bindings (request-bindings req))
+  (define json-data (bytes->jsexpr (request-post-data/raw req)))
+  (define name (hash-ref json-data 'name #f))
+  (define message (hash-ref json-data 'message #f))
 
-(define (list-posts req)
- (response/xexpr
-  `(html (head (title "Hello"))
-    (body (p "Hey posts")))))
-(define (review-posts req) 
- (response/xexpr
-  `(html (head (title "Hello World!"))
-    (body (p "Hey review posts")))))
-(define (review-archive req)
- (response/xexpr
-  `(html (head (title "Hello World!"))
-    (body (p "Hey review archive")))))
+  (if (and name message)
+      (begin
+        (write-message (hasheq 'set-at (current-seconds)
+                               'by-person name
+                               'message message))
+        (response/jsexpr
+          #hasheq((status . "OK"))))
+      (response/jsexpr
+        #hasheq((status . "ERROR")
+                (error . "Missing 'name' or 'message' field"))
+        #:code 400)))
 
 (define (start req)
   (displayln (request-uri req))

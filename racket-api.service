@@ -1,0 +1,20 @@
+[Unit]
+Description=Racket API Server
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/micro_api
+ExecStart=/usr/bin/racket /var/www/micro_api/server.rkt
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

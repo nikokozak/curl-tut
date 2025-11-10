@@ -6,7 +6,7 @@
          json)
 
 ; File path for storing messages
-(define message-file "/var/www/curl_tut/message.json")
+(define message-file "/var/www/curl-tut/message.json")
 
 ; Helper function to read the current message from file
 (define (read-message)

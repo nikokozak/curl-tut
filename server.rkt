@@ -26,8 +26,8 @@
   (dispatch-rules
   [("message") #:method "get" get-message-endpoint]
   [("message") #:method "post" post-message-endpoint]
-  [("health") health-endpoint]
-  [("") welcome-endpoint]
+  [("health") #:method "get" health-endpoint]
+  [("") #:method "get" welcome-endpoint]
   [else welcome-endpoint]))
 
 (define (welcome-endpoint req)
@@ -41,8 +41,8 @@ For now, you can do the following:\n\n
 
 (define (health-endpoint req)
   (response/jsexpr
-    #hasheq((status . "healthy")
-            (timestamp . (current-seconds)))))
+    (hasheq 'status "healthy"
+            'timestamp (exact->inexact (current-seconds)))))
 
 (define (get-message-endpoint req)
   (define msg (read-message))

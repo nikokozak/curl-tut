@@ -1,6 +1,7 @@
 # Deployment Guide for Racket API
 
 ## Prerequisites
+
 - DigitalOcean droplet with Ubuntu/Debian
 - Caddy installed and running
 - Racket installed on the VPS
@@ -139,6 +140,7 @@ fi
 ## Troubleshooting
 
 **Service won't start:**
+
 ```bash
 # Check logs for errors
 sudo journalctl -u racket-api.service -n 100
@@ -152,6 +154,7 @@ racket server.rkt
 ```
 
 **Port 4321 already in use:**
+
 ```bash
 # Find what's using the port
 sudo lsof -i :4321
@@ -161,12 +164,14 @@ sudo kill <PID>
 ```
 
 **Permission issues:**
+
 ```bash
 # Ensure proper ownership
 sudo chown -R www-data:www-data /var/www/micro_api
 ```
 
 **Caddy not forwarding requests:**
+
 ```bash
 # Check Caddy status
 sudo systemctl status caddy

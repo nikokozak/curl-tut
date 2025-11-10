@@ -26,6 +26,7 @@
   (dispatch-rules
   [("message") #:method "get" get-message-endpoint]
   [("message") #:method "post" post-message-endpoint]
+  [("health") health-endpoint]
   [("") welcome-endpoint]
   [else welcome-endpoint]))
 
@@ -35,7 +36,13 @@
 It is written in Racket, and will continue to grow until the end of class.\n
 For now, you can do the following:\n\n
   GET /message - Retrieve the current message from the \"wall\"\n
-  POST /message - Post a message to the wall in the format {\"name\": \"Your name\", \"message\": \"Something you feel like saying\"}\n\n"))
+  POST /message - Post a message to the wall in the format {\"name\": \"Your name\", \"message\": \"Something you feel like saying\"}\n
+  GET /health - Health check endpoint\n\n"))
+
+(define (health-endpoint req)
+  (response/jsexpr
+    #hasheq((status . "healthy")
+            (timestamp . (current-seconds)))))
 
 (define (get-message-endpoint req)
   (define msg (read-message))

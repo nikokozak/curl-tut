@@ -5,8 +5,8 @@ After=network.target
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/var/www/micro_api
-ExecStart=/usr/bin/racket /var/www/micro_api/server.rkt
+WorkingDirectory=/var/www/curl-tut
+ExecStart=/usr/bin/racket /var/www/curl-tut/server.rkt
 Restart=always
 RestartSec=10
 StandardOutput=journal

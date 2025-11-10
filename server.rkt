@@ -6,14 +6,14 @@
          json)
 
 ; File path for storing messages
-(define message-file "message.json")
+(define message-file "/var/www/curl_tut/message.json")
 
 ; Helper function to read the current message from file
 (define (read-message)
   (if (file-exists? message-file)
       (call-with-input-file message-file
         (lambda (in) (read-json in)))
-      #hasheq()))
+      (hasheq)))
 
 ; Helper function to write a message to file
 (define (write-message msg-hash)
@@ -48,8 +48,8 @@ For now, you can do the following:\n\n
   (define msg (read-message))
   (if (hash-empty? msg)
       (response/jsexpr
-        #hasheq((status . "ERROR")
-                (error . "No message available"))
+        (hasheq 'status "ERROR"
+                'error "No message available")
         #:code 404)
       (response/jsexpr msg)))
 
@@ -65,10 +65,10 @@ For now, you can do the following:\n\n
                                'by-person name
                                'message message))
         (response/jsexpr
-          #hasheq((status . "OK"))))
+          (hasheq 'status "OK")))
       (response/jsexpr
-        #hasheq((status . "ERROR")
-                (error . "Missing 'name' or 'message' field"))
+        (hasheq 'status "ERROR"
+                'error "Missing 'name' or 'message' field")
         #:code 400)))
 
 (define (start req)

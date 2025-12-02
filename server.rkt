@@ -99,7 +99,7 @@
 It is written in Racket, and will continue to grow until the end of class.\n\n
 === CURL ACADEMY ===\n
   GET /academy\n
-    20 levels to get good at curl.\n
+    Learn curl by progressing through 20 levels.\n
     Try: curl https://api.nkozak.com/academy\n\n
 === MESSAGE BOARD ===\n
   GET /message\n

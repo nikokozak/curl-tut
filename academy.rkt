@@ -5,10 +5,12 @@
          web-server/http/request-structs
          json
          file/sha1
-         racket/random)
+         racket/random
+         racket/pretty)
 
 (provide academy-welcome
-         academy-level-handler)
+         academy-level-handler
+         response/jsexpr-pretty)
 
 ;; ============================================================================
 ;; CONFIGURATION
@@ -83,9 +85,50 @@
    (for/list ([_ (in-range 16)])
      (string-ref chars (random (string-length chars))))))
 
+;; Pretty-print JSON with indentation
+(define (json-pretty obj [indent 0])
+  (define pad (make-string indent #\space))
+  (define pad2 (make-string (+ indent 2) #\space))
+  (cond
+    [(hash? obj)
+     (if (hash-empty? obj)
+         "{}"
+         (string-append
+          "{\n"
+          (string-join
+           (for/list ([(k v) (in-hash obj)])
+             (format "~a~s: ~a" pad2 (symbol->string k) (json-pretty v (+ indent 2))))
+           ",\n")
+          "\n" pad "}"))]
+    [(list? obj)
+     (if (null? obj)
+         "[]"
+         (string-append
+          "[\n"
+          (string-join
+           (for/list ([item obj])
+             (format "~a~a" pad2 (json-pretty item (+ indent 2))))
+           ",\n")
+          "\n" pad "]"))]
+    [(string? obj) (format "~s" obj)]
+    [(number? obj) (number->string obj)]
+    [(boolean? obj) (if obj "true" "false")]
+    [(eq? obj 'null) "null"]
+    [else (format "~s" obj)]))
+
+;; Pretty JSON response helper
+(define (response/jsexpr-pretty obj #:code [code 200])
+  (response/full
+   code
+   (if (= code 200) #"OK" #"Error")
+   (current-seconds)
+   #"application/json; charset=utf-8"
+   '()
+   (list (string->bytes/utf-8 (string-append (json-pretty obj) "\n")))))
+
 ;; Success response helper
 (define (success-response level lesson data next-instruction next-hint next-endpoint)
-  (response/jsexpr
+  (response/jsexpr-pretty
    (hasheq 'success #t
            'level level
            'lesson lesson
@@ -96,7 +139,7 @@
 
 ;; Error response helper
 (define (error-response level error-msg expected hint)
-  (response/jsexpr
+  (response/jsexpr-pretty
    (hasheq 'success #f
            'level level
            'error error-msg
@@ -117,7 +160,7 @@
 ;; ============================================================================
 
 (define (academy-welcome req)
-  (response/jsexpr
+  (response/jsexpr-pretty
    (hasheq 'message "Welcome to Curl Academy!"
            'description "Learn curl through 20 progressive challenges"
            'your_journey "Master HTTP methods, headers, authentication, and more"
@@ -132,7 +175,7 @@
 (define (academy-level-handler req level-num)
   (cond
     [(or (< level-num 1) (> level-num total-levels))
-     (response/jsexpr
+     (response/jsexpr-pretty
       (hasheq 'error "Level not found"
               'message (format "Levels go from 1 to ~a" total-levels)
               'hint "Start with /academy/level/1")
@@ -191,7 +234,7 @@
     [(19) (level-19-send-cookie req)]
     [(20) (level-20-graduation req)]
 
-    [else (response/jsexpr (hasheq 'error "Level not implemented") #:code 500)]))
+    [else (response/jsexpr-pretty (hasheq 'error "Level not implemented") #:code 500)]))
 
 ;; ============================================================================
 ;; TIER 1: HTTP METHODS
@@ -729,7 +772,7 @@
                         "JSON needs status:complete and levels_passed:19"
                         "curl ... -d '{\"status\":\"complete\",\"levels_passed\":19}' ...")]
        [else
-        (response/jsexpr
+        (response/jsexpr-pretty
          (hasheq 'success #t
                  'level 20
                  'message "CONGRATULATIONS! You've mastered curl!"

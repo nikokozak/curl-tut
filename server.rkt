@@ -3,7 +3,8 @@
          web-server/servlet-env
          racket/list
          racket/file
-         json)
+         json
+         "academy.rkt")
 
 ; File path for storing messages
 (define message-file "/var/www/curl-tut/message.json")
@@ -82,6 +83,13 @@
   [("color") #:method "get" get-color-endpoint]
   [("color") #:method "post" post-color-endpoint]
   [("health") #:method "get" health-endpoint]
+  [("academy") #:method "get" academy-welcome]
+  [("academy" "level" (integer-arg)) #:method "get" academy-level-handler]
+  [("academy" "level" (integer-arg)) #:method "post" academy-level-handler]
+  [("academy" "level" (integer-arg)) #:method "put" academy-level-handler]
+  [("academy" "level" (integer-arg)) #:method "patch" academy-level-handler]
+  [("academy" "level" (integer-arg)) #:method "delete" academy-level-handler]
+  [("academy" "level" (integer-arg)) #:method "head" academy-level-handler]
   [("") #:method "get" welcome-endpoint]
   [else welcome-endpoint]))
 
@@ -89,6 +97,10 @@
   (response/xexpr
     "\n\nWelcome! This is my little API.\n
 It is written in Racket, and will continue to grow until the end of class.\n\n
+=== CURL ACADEMY ===\n
+  GET /academy\n
+    20 levels to get good at curl.\n
+    Try: curl https://api.nkozak.com/academy\n\n
 === MESSAGE BOARD ===\n
   GET /message\n
     Retrieve the current message from the \"wall\"\n\n
